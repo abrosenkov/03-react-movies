@@ -7,9 +7,10 @@ import MovieGrid from "../MovieGrid/MovieGrid";
 import MovieModal from "../MovieModal/MovieModal";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import Loader from "../Loader/Loader";
+import toast from "react-hot-toast";
 
 export default function App() {
-  const [filmes, setFilmes] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -18,9 +19,13 @@ export default function App() {
     try {
       setError(false);
       setLoading(true);
-      setFilmes([]);
+      setMovies([]);
       const data = await fetchMovies(topic);
-      setFilmes(data);
+      if (data.length === 0) {
+        toast("No movies found for your request.");
+        return;
+      }
+      setMovies(data);
     } catch {
       setError(true);
     } finally {
@@ -28,11 +33,8 @@ export default function App() {
     }
   };
 
-  const handleSelect = (id: number) => {
-    const movie = filmes.find((m) => m.id === id);
-    if (movie) {
-      setSelectedMovie(movie);
-    }
+  const handleSelect = (movie: Movie) => {
+    setSelectedMovie(movie);
   };
 
   const handleClose = () => {
@@ -47,7 +49,7 @@ export default function App() {
       {error ? (
         <ErrorMessage />
       ) : (
-        <MovieGrid movies={filmes} onSelect={handleSelect} />
+        <MovieGrid movies={movies} onSelect={handleSelect} />
       )}
       {selectedMovie && (
         <MovieModal movie={selectedMovie} onClose={handleClose} />
